@@ -1,10 +1,19 @@
 #!/bin/bash
+# Unixではファイル先頭行に#!（シェバン$）がある場合、その直後に記載されているコマンドを実行する
+# 今回の定義は/bin/bashを実行する定義となる。bash tutorial.shとしなくても、tutorial.shだけの実行でbash実行となる。
+# 
+# ========================================================
 # 引数は２つ指定
-
+# 参考URL
+# https://qiita.com/m-yamashita/items/889c116b92dc0bf4ea7d
+# ========================================================
 # ++++++++++++ エラー時制御 ++++++++++++
 # set -e : エラーが発生した場合、処理中断 
 # set -u : 未定義の変数がある場合、処理中断
-set -eu
+# set -x : xtrace。変数の状態をデバック出力。実行時にbash -x tutorial.shと指定することも可能
+# set -v : verbose。コマンドをデバック取得。実行時にbash -v tutorial.shと指定するも可能
+# またbash -n tutorial.shとするとコマンドの実行はされず構文のみチェック可能（noexecオプション）
+set -euxv
 echo '=========  set ========='
 echo "設定：エラー時、変数未定義時に処理中断。実行時引数が２つ必要。"
 
@@ -177,14 +186,45 @@ echo;echo  '----- DoubleBracket[[]]：Singleの拡張版 -----'
 echo $(if [[ 1 -eq 1 && abc == a* ]]; then echo "DoubleBracket[[]] Sample"; fi)
 
 
+# ++++++++++++ 関数 ++++++++++++
+# 関数名(){ コマンドの列挙 }
+# 1行で記載する場合は、{,}の後、前にスペースが必要。またコマンド毎に;も必要
+echo;echo  '----- 関数 -----'
+echo  'defined function'
+sampleFunc(){
+  echo  'called function : '$1
+  return 0;
+}
+echo 'call function'
+sampleFunc 'sample function'
+
+
 # ++++++++++++ その他 ++++++++++++
-# 時間
+# ----- 時間 -----
 #  unix時間へ変換。時間の範囲していなどで重宝する
 #  date "+%s" 
 echo;echo '=========  other ========='
 echo '----- unix time -----'
 echo $(date "+%s")
 
+
+# ----- プロンプトメッセージ設定 -----
+# PS1に設定する
+# \n : 改行
+# \u : ログイン名
+# \h : ホスト名
+# \w : カレントディレクトリ
+# \$ : ルートの場合#、それ以外は#
+# 下記が現状と同じ設定
+echo '----- change prompt message -----'
+PS1='\u@\h:\w\$ '
+
+
+# ----- プロンプトメッセージ設定 -----
+# login shell : /etc/profile, ~/.profile
+#              -> 環境変数などを定義するのがよい
+# other       : /etc/bashrc, ~/.bashrc
+#              -> promptや関数の設定をするのがよい
 
 
 # ++++++++++++ 終了ステータス ++++++++++++
