@@ -122,7 +122,7 @@ echo '--- スキャンタイプ --- '
 echo ' -sS   : TCP SYNスキャン。最もよく利用される。FWの妨害もない。TPCコネクション確率なし。匿名性が高い'
 echo ' -sT   : TCP connect()スキャン。コネクション確率要求。相手側のログ（/var/log/secure）に残る可能性大'
 echo ' -sU   : UDPスキャン。TCPより時間は掛かる。'
-echo ' -sN,sF,sX   : TCPコントロールフラグのうち３つ（SYN, RST, ACK）の値を特定の状態にしてスキャン
+echo ' -sN,sF,sX   : TCPコントロールフラグのうち３つ（SYN, RST, ACK）の値を特定の状態にしてスキャン'
 echo ' -sA   : TCP ACKスキャン。ポートのopen状態をスキャン判別しない。FWのルール、statefull、ポートfillteringを調査'
 echo '> nmap -sS google.com'
 nmap -sS google.com
