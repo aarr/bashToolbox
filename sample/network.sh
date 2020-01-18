@@ -92,3 +92,39 @@ echo '=========== whois =========== '
 echo '> whois yahoo.co.jp'
 whois yahoo.co.jp
 
+
+echo -e '\n\n' 
+# ++++++++++++++ nmap ++++++++++++++
+# ポートスキャン機能
+# オプションの種類が非常に多い
+# ・ホスト発見
+# ・スキャンタイプ
+# ・ポート指定と順序
+# ・サービスとバージョン検出
+# ・OS検出
+# ・タイミング、パフォーマンス
+# ・FW、IDSの回避
+# ・出力
+# ・ターゲット指定
+echo '=========== nmap =========== '
+echo '--- ホスト発見 --- '
+echo ' -sL   : リストスキャン。DNSの情報を利用'
+echo ' -sP   : Pingスイープ。ICMPエコー要求、80ポートTCPパケット'
+echo ' -PS   : TCP SYN Ping'
+echo ' -PA   : TPC ACK ping'
+echo ' -PU   : UDP Ping'
+echo ' -Pn   : ホスト発見オプションはスキップ'
+echo '> nmap -sP google.com'
+nmap -sP google.com
+
+echo -e '\n\n' 
+echo '--- スキャンタイプ --- '
+echo ' -sS   : TCP SYNスキャン。最もよく利用される。FWの妨害もない。TPCコネクション確率なし。匿名性が高い'
+echo ' -sT   : TCP connect()スキャン。コネクション確率要求。相手側のログ（/var/log/secure）に残る可能性大'
+echo ' -sU   : UDPスキャン。TCPより時間は掛かる。'
+echo ' -sN,sF,sX   : TCPコントロールフラグのうち３つ（SYN, RST, ACK）の値を特定の状態にしてスキャン
+echo ' -sA   : TCP ACKスキャン。ポートのopen状態をスキャン判別しない。FWのルール、statefull、ポートfillteringを調査'
+echo ' -Pn   : ホスト発見オプションはスキップ'
+echo '> nmap -sS google.com'
+nmap -sS google.com
+
