@@ -138,14 +138,14 @@ echo
 
 # プレース展開
 echo;echo '----- Braces{}：プレース展開 -----'
-# {n..m}はn〜mを寛解
+# {n..m}はn〜mを展開
 echo Braces{} Sample3-1：
 for arg in Sample{1..5}; do echo $arg; done;
 echo Braces{} Sample3-2：
 for arg in Sample{1..5..2}; do echo $arg; done;
 echo Braces{} Sample3-3：
 for arg in Sample{One,Two,Three}; do echo $arg; done;
-# {a,b}はカンマ区切りされた内容を展開k
+# {a,b}はカンマ区切りされた内容を展開
 echo "Braces{} Sample3-4：mv" Sample3{,_bk}.txt
 # パス展開
 # []：括弧内に含まれる文字列に一致する
