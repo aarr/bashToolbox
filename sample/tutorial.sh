@@ -22,7 +22,7 @@ echo "設定：エラー時、変数未定義時に処理中断。実行時引�
 # $#は引数の数
 echo;echo '=========  args ========='
 echo "引数数："$#
-# 3つ異常引数が設定されている場合にエラーを発生させる（set -eの確認）
+# 3つ以上引数が設定されている場合にエラーを発生させる（set -eの確認）
 if test $# -gt 2; then
   undefinedCommand
 fi
@@ -53,6 +53,7 @@ ans=Yes
 # 数値系： eq : equal, ne : not equal, lt : less than, gt : greater than
 # 文字列系： = : equal, != : not equal, -z : 0 more charactor, -n : 1 more charactor
 # ファイル系： -f : file, -d : directory, -s : file and size is not equal 0
+# 複数条件を記載する場合、&&/||、-a/-oを利用する
 echo;echo '=========  if ========='
 if test $var1 -eq 1
 then
@@ -61,6 +62,15 @@ then
 elif [ $var1 -eq 12 ]
 then
   echo "var1 equal 12"
+# 条件式複数
+elif [ -z "$var1" ] || [ $var1 -ne 123 ]; then
+  echo "var1 not equal empty -1"
+elif [ -z "$var1" -o $var1 -ne 123 ]; then
+  echo "var1 not equal empty -2"
+elif [ -n "$var1" ] && [ $var1 -ne 123 ]; then
+  echo "var1 not equal 123 -2"
+elif [ -n "$var1" -a $var1 -ne 123 ]; then
+  echo "var1 not equal 123 -2"
 # 条件式１行
 elif [ ${var1}1 -eq 1231 ]; then
   echo "var1 equal 123"
