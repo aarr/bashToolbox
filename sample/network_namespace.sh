@@ -61,14 +61,15 @@ eval ${cmd}
 
 
 echo -e '\n\n' 
+cat <<EOS
 # +++++++++++++++++++++++++++++++++++++++++++++
-# ++++++++++++++ routing ns to ns ++++++++++++++
+# ++++++++++++++ routing ns to ns +++++++++++++
 # +++++++++++++++++++++++++++++++++++++++++++++
-#    ns1             ns2
-#     |               |
-# ns1-veth0 <---> ns2-veth0
-# 192.0.2.1       192.0.2.2
-#
+    ns1             ns2
+     |               |
+ ns1-veth0 <---> ns2-veth0
+ 192.0.2.1       192.0.2.2
+EOS
 # NetworkNamespace同士を接続させる
 echo '=========== routing ns to ns =========== '
 echo '----------- netns add ----------- '
@@ -180,17 +181,19 @@ eval ${cmd}
 
 
 echo -e '\n\n' 
+cat <<EOS
 # ++++++++++++++++++++++++++++++++++++++++++++++++++
 # ++++++++++++++ routing ns router ns ++++++++++++++
 # ++++++++++++++++++++++++++++++++++++++++++++++++++
-# ns1              router            ns2
-#  |                  |               |
-# ns1-veth0 <---> gw-veth0            |
-# 192.0.2.1       192.0.2.254         |
-#                     |               |
-#                 gw-veth1 <----> ns2-veth0
-#                 198.51.100.254  198.51.100.1
-#
+
+ ns1              router            ns2
+  |                  |               |
+ ns1-veth0 <---> gw-veth0            |
+ 192.0.2.1       192.0.2.254         |
+                     |               |
+                 gw-veth1 <----> ns2-veth0
+                 198.51.100.254  198.51.100.1
+EOS
 # NetworkNamespace同士を接続させる
 echo '=========== routing ns router ns =========== '
 echo '----------- netns add ----------- '
@@ -373,20 +376,22 @@ eval ${cmd}
 
 
 echo -e '\n\n' 
+cat <<EOS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ++++++++++++++ routing ns router router ns ++++++++++++++
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# ns1              router1          router2             ns2
-#  |                  |                |                 |
-# ns1-veth0 <---> gw1-veth0            |                 |
-# 192.0.2.1       192.0.2.254          |                 |
-#                     |                |                 |
-#                 gw1-veth1 <----> gw2-veth0             |
-#                 203.0.113.1      203.0.113.2           |
-#                                      |                 |
-#                                  gw2-veth1 <----> ns2-veth0
-#                                  198.51.100.254   198.51.100.1
-#
+ ns1              router1          router2             ns2
+  |                  |                |                 |
+ ns1-veth0 <---> gw1-veth0            |                 |
+ 192.0.2.1       192.0.2.254          |                 |
+                     |                |                 |
+                gw1-veth1 <----> gw2-veth0             |
+                 203.0.113.1      203.0.113.2           |
+                                      |                 |
+                                  gw2-veth1 <----> ns2-veth0
+                                  198.51.100.254   198.51.100.1
+
+EOS
 # NetworkNamespace同士を接続させる
 echo '=========== routing ns router router ns =========== '
 echo '----------- netns add ----------- '
@@ -580,6 +585,230 @@ echo '----------- nstns delete ----------- '
 cmd="ip netns list | cut -d ' ' -f 1 | xargs -L 1 ip netns delete" 
 echo '> '$cmd
 eval ${cmd}
+cmd="ip netns show" 
+echo '> '$cmd
+eval ${cmd}
+
+
+
+
+echo -e '\n\n' 
+cat <<EOS
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ++++++++++++++++++ routing with bridge ++++++++++++++++++
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                      bridge
+                         |
+     ----------------------------------------
+     |                   |                   |
+ ns01-br0 <----      ns02-br0 <----       ns03-br0 <----
+              |                   |                     |
+              |                   |                     |
+    ns1       |         ns2       |          ns3        |
+     |        |          |        |           |         |
+ ns1-veth0 <---      ns2-veth0 <---       ns3-veth0 <---
+ 192.0.2.1           192.0.2.2           192.0.2.3
+ 00:00:5E:00:53:01   00:00:5E:00:53:02   00:00:5E:00:53:03
+EOS
+#
+echo '=========== routing with bridge =========== '
+echo '----------- netns add ----------- '
+# NetworkNamespace作成
+cmd="ip netns add ns1;\
+ip netns add ns2;\
+ip netns add ns3;"
+echo '> '$cmd
+eval ${cmd}
+# 作成したNetworkNamespaceを表示
+cmd="ip netns show"
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
+# ++++++++++++++ link add ++++++++++++++
+# ネットワークインターフェース／ブリッジ作成
+# veth(Virtual Ethernet Device)、bridgeという仮想的な
+# ネットワークインターフェースを作成する
+echo '----------- link add ----------- '
+cmd="ip link add ns1-veth0 type veth peer name ns1-br0;\
+ip link add ns2-veth0 type veth peer name ns2-br0;\
+ip link add ns3-veth0 type veth peer name ns3-br0"
+echo '> '$cmd
+eval ${cmd}
+# 作成したネットワークインターフェースを確認
+cmd="ip link show | grep veth"
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
+# ++++++++++++++ link set ++++++++++++++
+# ネットワークインターフェースとNetrowkNamespaceをリンク
+# 仮想的にLANケーブルで繋がった状態
+echo '----------- link set ----------- '
+cmd="ip link set ns1-veth0 netns ns1;\
+ip link set ns2-veth0 netns ns2;\
+ip link set ns3-veth0 netns ns3;" 
+echo '> '$cmd
+eval ${cmd}
+# 各NetworkNamespaceでリンク状態を確認
+cmd="ip netns exec ns1 ip link show | grep veth" 
+echo '> '$cmd
+eval ${cmd}
+cmd="ip netns exec ns2 ip link show | grep veth" 
+echo '> '$cmd
+eval ${cmd}
+cmd="ip netns exec ns3 ip link show | grep veth" 
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
+# ++++++++++++++ ip address add ++++++++++++++
+# ネットワークインターフェースにIPを設定
+echo '----------- address add ----------- '
+cmd="ip netns exec ns1 ip address add 192.0.2.1/24 dev ns1-veth0;\
+ip netns exec ns2 ip address add 192.0.2.2/24 dev ns2-veth0;\
+ip netns exec ns3 ip address add 192.0.2.3/24 dev ns3-veth0;" 
+echo '> '$cmd
+eval ${cmd}
+
+# ++++++++++++++ mac address add ++++++++++++++
+# ネットワークインターフェースにMACアドレスを設定
+echo '----------- mac address setting ----------- '
+cmd="ip netns exec ns1 ip link set dev ns1-veth0 address 00:00:5E:00:53:01;\
+ip netns exec ns2 ip link set dev ns2-veth0 address 00:00:5E:00:53:02;\
+ip netns exec ns3 ip link set dev ns3-veth0 address 00:00:5E:00:53:03;" 
+echo '> '$cmd
+eval ${cmd}
+
+# IP/MACアドレス確認
+cmd="ip netns exec ns1 ip address show | grep -e veth -e link/ether" 
+echo '> '$cmd
+eval ${cmd}
+cmd="ip netns exec ns2 ip address show | grep -e veth -e link/ether" 
+echo '> '$cmd
+eval ${cmd}
+cmd="ip netns exec ns3 ip address show | grep -e veth -e link/ether" 
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
+# ++++++++++++++ link set up ++++++++++++++
+# ネットワークインターフェースを有効化
+# デフォルト設定でstateがDOWNになっている
+echo '----------- link set up ----------- '
+cmd="ip netns exec ns1 ip link set ns1-veth0 up;\
+ip netns exec ns2 ip link set ns2-veth0 up;\
+ip netns exec ns3 ip link set ns3-veth0 up;" 
+echo '> '$cmd
+eval ${cmd}
+
+# ネットワークインターフェースの状態確認
+# stateがUPになっていることを確認
+cmd="ip netns exec ns1 ip address show | grep veth" 
+echo '> '$cmd
+eval ${cmd}
+cmd="ip netns exec ns2 ip address show | grep veth" 
+echo '> '$cmd
+eval ${cmd}
+cmd="ip netns exec ns3 ip address show | grep veth" 
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
+# ++++++++++++++ link add ++++++++++++++
+# ネットワークインターフェースを有効化
+# デフォルト設定でstateがDOWNになっている
+echo '----------- link add (bridge) ----------- '
+cmd="ip link add dev br0 type bridge"
+echo '> '$cmd
+eval ${cmd}
+# ブリッジインターフェースの状態確認
+cmd="ip link show | grep br0" 
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
+# ++++++++++++++ link set up ++++++++++++++
+# ブリッジのネットワークインターフェースを有効化
+# デフォルト設定でstateがDOWNになっている
+echo '----------- bridge set up ----------- '
+cmd="ip link set br0 up" 
+echo '> '$cmd
+eval ${cmd}
+# ブリッジインターフェースの状態確認
+# stateがUPになっていることを確認
+cmd="ip address show | grep br0:" 
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
+# ++++++++++++++ link set ++++++++++++++
+# bridgeにネットワークインターフェースの設定
+echo '----------- link set (bridge) ----------- '
+cmd="ip link set dev ns1-br0 master br0;\
+ip link set dev ns2-br0 master br0;\
+ip link set dev ns3-br0 master br0; " 
+echo '> '$cmd
+eval ${cmd}
+echo '----------- link set up (bridge) ----------- '
+cmd="ip link set ns1-br0 up;\
+ip link set ns2-br0 up;\
+ip link set ns3-br0 up; " 
+echo '> '$cmd
+eval ${cmd}
+# ブリッジインターフェースの状態確認
+cmd="ip link show | grep ns.-br0" 
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
+# ++++++++++++++ ping ++++++++++++++
+# 疎通確認
+echo '----------- ping (ns1 -> ns2) ----------- '
+cmd="ip netns exec ns1 ping -c 1 192.0.2.2" 
+echo '> '$cmd
+eval ${cmd}
+echo '----------- ping (ns1 -> ns3) ----------- '
+cmd="ip netns exec ns1 ping -c 1 192.0.2.3" 
+echo '> '$cmd
+eval ${cmd}
+echo '----------- ping (ns2 -> ns1) ----------- '
+cmd="ip netns exec ns2 ping -c 1 192.0.2.1" 
+echo '> '$cmd
+eval ${cmd}
+echo '----------- ping (ns2 -> ns1) ----------- '
+cmd="ip netns exec ns2 ping -c 1 192.0.2.3" 
+echo '> '$cmd
+eval ${cmd}
+echo '----------- ping (ns3 -> ns1) ----------- '
+cmd="ip netns exec ns3 ping -c 1 192.0.2.1" 
+echo '> '$cmd
+eval ${cmd}
+echo '----------- ping (ns3 -> ns2) ----------- '
+cmd="ip netns exec ns3 ping -c 1 192.0.2.2" 
+echo '> '$cmd
+eval ${cmd}
+
+
+
+
+
+echo -e '\n' 
+# ++++++++++++++ 初期化 ++++++++++++++
+# NetworkNamespaceを削除
+echo '----------- nstns delete ----------- '
+# 1行毎にdelete実行
+cmd="ip netns list | cut -d ' ' -f 1 | xargs -L 1 ip netns delete" 
+echo '> '$cmd
+#eval ${cmd}
 cmd="ip netns show" 
 echo '> '$cmd
 eval ${cmd}
