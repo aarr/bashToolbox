@@ -791,32 +791,29 @@ echo -e '\n'
 # ++++++++++++++ ping ++++++++++++++
 # 疎通確認
 echo '----------- ping (ns1 -> ns2) ----------- '
-cmd="ip netns exec ns1 ping -c 1 192.0.2.2" 
+cmd="ip netns exec ns1 ping -c 3 192.0.2.2" 
 echo '> '$cmd
 eval ${cmd}
 echo '----------- ping (ns1 -> ns3) ----------- '
-cmd="ip netns exec ns1 ping -c 1 192.0.2.3" 
+cmd="ip netns exec ns1 ping -c 3 192.0.2.3" 
 echo '> '$cmd
 eval ${cmd}
 echo '----------- ping (ns2 -> ns1) ----------- '
-cmd="ip netns exec ns2 ping -c 1 192.0.2.1" 
+cmd="ip netns exec ns2 ping -c 3 192.0.2.1" 
 echo '> '$cmd
 eval ${cmd}
 echo '----------- ping (ns2 -> ns1) ----------- '
-cmd="ip netns exec ns2 ping -c 1 192.0.2.3" 
+cmd="ip netns exec ns2 ping -c 3 192.0.2.3" 
 echo '> '$cmd
 eval ${cmd}
 echo '----------- ping (ns3 -> ns1) ----------- '
-cmd="ip netns exec ns3 ping -c 1 192.0.2.1" 
+cmd="ip netns exec ns3 ping -c 3 192.0.2.1" 
 echo '> '$cmd
 eval ${cmd}
 echo '----------- ping (ns3 -> ns2) ----------- '
-cmd="ip netns exec ns3 ping -c 1 192.0.2.2" 
+cmd="ip netns exec ns3 ping -c 3 192.0.2.2" 
 echo '> '$cmd
 eval ${cmd}
-
-
-
 
 
 echo -e '\n' 
@@ -826,7 +823,7 @@ echo '----------- nstns delete ----------- '
 # 1行毎にdelete実行
 cmd="ip netns list | cut -d ' ' -f 1 | xargs -L 1 ip netns delete" 
 echo '> '$cmd
-#eval ${cmd}
+eval ${cmd}
 cmd="ip netns show" 
 echo '> '$cmd
 eval ${cmd}
