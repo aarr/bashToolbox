@@ -822,10 +822,22 @@ echo -e '\n'
 echo '----------- nstns delete ----------- '
 # 1行毎にdelete実行
 cmd="ip netns list | cut -d ' ' -f 1 | xargs -L 1 ip netns delete" 
+# 下記でもよい
+# ip -all netns delete
 echo '> '$cmd
 eval ${cmd}
 cmd="ip netns show" 
 echo '> '$cmd
 eval ${cmd}
+
+echo '----------- bridge delete ----------- '
+cmd="ip link delete br0" 
+echo '> '$cmd
+eval ${cmd}
+cmd="ip link show | grep br0" 
+echo '> '$cmd
+eval ${cmd}
+
+
 
 
