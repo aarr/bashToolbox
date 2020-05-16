@@ -304,6 +304,15 @@ eval ${cmd}
 
 
 echo -e '\n' 
+# ++++++++++++++ net.ipv4.ip_forward ++++++++++++++
+# OSの設定上ルーターとしての機能がOFFになっていることがあるので設定変更
+echo '----------- net.ipv4.ip_forward ----------- '
+cmd="ip netns exec router sysctl net.ipv4.ip_forward=1"
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
 # ++++++++++++++ ping to router++++++++++++++
 # routerまでの疎通確認
 echo '----------- ping to router----------- '
@@ -564,9 +573,18 @@ eval ${cmd}
 
 
 echo -e '\n' 
+# ++++++++++++++ net.ipv4.ip_forward ++++++++++++++
+# OSの設定上ルーターとしての機能がOFFになっていることがあるので設定変更
+echo '----------- net.ipv4.ip_forward ----------- '
+cmd="ip netns exec router1 sysctl net.ipv4.ip_forward=1;\
+ip netns exec router2 sysctl net.ipv4.ip_forward=1;"
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
 # ++++++++++++++ ping ++++++++++++++
 # 疎通確認
-# 100% packet lossとなる場合、ルータとしての機能がOFFになっているので設定変更
 # ip netns exec router sysctl net.ipv4.ip_forward=1
 # net.ipv4.ip_forward=0の場合、エラーとなる
 echo '----------- ping ----------- '
