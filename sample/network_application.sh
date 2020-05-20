@@ -4,6 +4,7 @@
 # 引数なし
 # アプリケーション層のサンプル
 # ========================================================
+# HTTP通信確認
 echo -e '\n\n' 
 cat <<EOS
 # ++++++++++++++++++++++++++++++++++
@@ -67,6 +68,7 @@ eval ${cmd}
 
 
 
+# DHS通信確認
 echo -e '\n\n' 
 cat <<EOS
 # +++++++++++++++++++++++++++++++++
@@ -114,12 +116,101 @@ echo '> '$cmd
 eval ${cmd}
 
 
-
-
 echo -e '\n' 
 echo '============= finally ============= '
 echo '----------- kill process ----------- '
 cmd="kill -9 "$tcpdump_pid
 echo '> '$cmd
 eval ${cmd}
+
+
+
+
+# DHCP通信確認
+echo -e '\n\n' 
+cat <<EOS
+# +++++++++++++++++++++++++++++++++
+# +++++++++++++ DHCP ++++++++++++++
+# +++++++++++++++++++++++++++++++++
+EOS
+echo '============= initial ============= '
+echo '----------- add netns ----------- '
+cmd="ip netns add server;\
+ip netns add client;"
+echo '> '$cmd
+eval ${cmd}
+
+echo '----------- add link ----------- '
+cmd="ip link add s-veth0 type veth peer name c-veth0"
+echo '> '$cmd
+eval ${cmd}
+
+echo '----------- link up ----------- '
+cmd="ip  link set s-veth0 netns server;\
+ip link set c-veth0 netns client;"
+echo '> '$cmd
+eval ${cmd}
+
+echo '----------- link up ----------- '
+cmd="ip netns exec server ip link set s-veth0 up;\
+ip netns exec client ip link set c-veth0 up;"
+echo '> '$cmd
+eval ${cmd}
+
+echo '----------- set address ----------- '
+# ServerのみIPアドレスを設定
+cmd="ip netns exec server ip address add 192.0.2.254/24 dev s-veth0"
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
+echo '============= DHCP Server & Client ============= '
+echo '----------- dhcp server ----------- '
+# ServerにDNSの設定
+# DHCPサーバの起動(192.0.2.100〜192.0.2.200の範囲でIPアドレス割当を行う）
+cmd="(ip netns exec server dnsmasq --dhcp-range=192.0.2.100,192.0.2.200,255.255.255.0 --interface=s-veth0 --no-daemon) &"
+dhcp_server_pid=$!
+echo '> '$cmd
+eval ${cmd}
+
+echo -e '\n' 
+echo '----------- dhcp client ----------- '
+# DHCPクライアント実行
+cmd="ip netns exec client dhclient c-veth0"
+echo '> '$cmd
+eval ${cmd}
+
+echo -e '\n' 
+echo '----------- get ip address ----------- '
+cmd="ip netns exec client ip address show | grep 'inet '"
+echo '> '$cmd
+eval ${cmd}
+
+echo -e '\n' 
+echo '----------- get routing table ----------- '
+# DHCPを利用すると、IPアドレス、ルーティングテーブルを自動で設定可能
+# DNSのネームサーバ、時刻同期のNTPサーバも設定が可能
+cmd="ip netns exec client ip route show"
+echo '> '$cmd
+eval ${cmd}
+
+
+echo -e '\n' 
+echo '============= finally ============= '
+echo '----------- kill process ----------- '
+cmd='kill -9 '$dhcp_server_pid
+echo '> '$cmd
+eval ${cmd}
+
+echo '----------- delete netns ----------- '
+cmd='ip -all netns delete'
+echo '> '$cmd
+eval ${cmd}
+
+cmd='ip netns show'
+echo '> '$cmd
+eval ${cmd}
+
+
 
