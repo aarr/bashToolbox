@@ -170,9 +170,10 @@ echo '----------- dhcp server ----------- '
 # ServerにDNSの設定
 # DHCPサーバの起動(192.0.2.100〜192.0.2.200の範囲でIPアドレス割当を行う）
 cmd="(ip netns exec server dnsmasq --dhcp-range=192.0.2.100,192.0.2.200,255.255.255.0 --interface=s-veth0 --no-daemon) &"
-dhcp_server_pid=$!
 echo '> '$cmd
 eval ${cmd}
+dhcp_server_pid=$!
+echo 'DHCP SERVER PID:'$dhcp_server_pid
 
 echo -e '\n' 
 echo '----------- dhcp client ----------- '
