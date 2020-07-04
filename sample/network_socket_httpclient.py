@@ -4,6 +4,9 @@
 本Scriptを実行する前にはHTTPサーバを起動する必要がある。
 80ポートでHTTPサーバを起動
 python -m http.server -b 127.0.0.1 80
+
+※ network_socket_httpclient.shで本Scriptを呼び出している
+  bash内にて上記コマンド実行
 """
 
 import socket
