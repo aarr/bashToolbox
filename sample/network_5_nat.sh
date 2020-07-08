@@ -21,11 +21,11 @@
 # とれたリクエスト内容にするための書き換えを行ってくれている。
 #
 # Client1               Router 
-# address   port        address    port
-# 192.0.2.1 50000 ----- 128.0.0.1  50100 <=====> Global Address
+# address   port(any)   address       port(auto)
+# 192.0.2.1 50000 ----- 203.0.113.254 50100 <=====> Global Address
 # 
 # Client2
-# 192.0.2.2 50000 ----- 128.0.0.1  50101 <=====> Global Address
+# 192.0.2.2 50000 ----- 203.0.113.254 50101 <=====> Global Address
 
 echo -e '\n\n' 
 cat <<EOS
@@ -169,7 +169,7 @@ echo -e '\n\n'
 #
 # Client1                 Router 
 # address                 address        port        address    port
-# Global Address  <=====> 203.0.113.254  54321 ----- 192.0.2.1  54321 
+# Global Address  <=====> 203.0.113.254  54321 ----- 192.0.2.1  8888 
 cat <<EOS
 # ++++++++++++++++++++++++++++++++++
 # ++++++++ Destination NAT +++++++++
@@ -179,10 +179,11 @@ Source NATの環境を再利用
   |                  |               |
  lan-veth0 <---> gw-veth0            |
  192.0.2.1       192.0.2.254         |
- (54321:tcp server)  |               |
+ (8888:tcp server)   |               |
                      |               |
                  gw-veth1 <----> wan-veth0
                  203.0.113.254   203.0.113.1
+                 (54321:public port)
 
 EOS
 echo '============= initial ============= '
@@ -193,7 +194,7 @@ cmd="ip netns exec router iptables -t nat
  --dport 54321 \
  -d 203.0.113.254 \
  -j DNAT \
- --to-destination 192.0.2.1"
+ --to-destination 192.0.2.1:8888"
 echo '> '$cmd
 eval ${cmd}
 
@@ -207,7 +208,7 @@ eval ${cmd}
 
 echo -e '\n' 
 echo '----------- add tcp server ----------- '
-cmd="(ip netns exec lan nc -lvn 54321) &"
+cmd="(ip netns exec lan nc -lvn 8888) &"
 echo '> '$cmd
 eval ${cmd}
 
@@ -227,7 +228,7 @@ sleep 1
 
 echo -e '\n' 
 echo '----------- tcpdump wan ----------- '
-cmd="(ip netns exec lan tcpdump -tnl -i lan-veth0 'tcp and port 54321';) &"
+cmd="(ip netns exec lan tcpdump -tnl -i lan-veth0 'tcp and port 8888';) &"
 echo '> '$cmd
 eval ${cmd}
 tcpdump_wan_pid2=$!
